@@ -1,4 +1,4 @@
-package com.github.rinotc.matrix
+package com.github.rinotc.smatrix
 
 import org.scalatest.{EitherValues, Inside, OptionValues}
 import org.scalatest.diagrams.Diagrams

@@ -1,4 +1,4 @@
-package com.github.rinotc.matrix
+package com.github.rinotc.smatrix
 
 import scala.annotation.targetName
 import scala.reflect.ClassTag

@@ -1,4 +1,4 @@
-package com.github.rinotc.matrix
+package com.github.rinotc.smatrix
 
 class MatrixTest extends BaseTest {
 
