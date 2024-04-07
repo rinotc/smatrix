@@ -2,6 +2,8 @@ package com.github.rinotc.smatrix
 
 import scala.annotation.targetName
 import scala.reflect.ClassTag
+import scala.util.boundary
+import scala.util.boundary.break
 
 /**
  * 行列
@@ -159,13 +161,13 @@ final class Matrix[N: ClassTag](val rows: Int, val cols: Int)(using num: Numeric
   /**
    * 対角行列かどうか
    */
-  def isDiagonal: Boolean = {
-    if !isSquare then return false
+  def isDiagonal: Boolean = boundary {
+    if !isSquare then break(false)
     for {
       i <- 0 until rows
       j <- 0 until cols
     } {
-      if i != j && this(i, j) != num.zero then return false
+      if i != j && this(i, j) != num.zero then break(false)
     }
     true
   }
@@ -173,13 +175,13 @@ final class Matrix[N: ClassTag](val rows: Int, val cols: Int)(using num: Numeric
   /**
    * 恒等行列（=単位行列）かどうか
    */
-  def isIdentity: Boolean = {
-    if !isDiagonal then return false
+  def isIdentity: Boolean = boundary {
+    if !isDiagonal then break(false)
     for {
       i <- 0 until rows
       j <- 0 until cols
     } {
-      if i == j && this(i, j) != num.one then return false
+      if i == j && this(i, j) != num.one then break(false)
     }
     true
   }
