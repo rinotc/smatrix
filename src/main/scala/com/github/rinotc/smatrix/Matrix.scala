@@ -27,6 +27,10 @@ final class Matrix[N: ClassTag](val rows: Int, val cols: Int)(using num: Numeric
     data(row)(col) = value
   }
 
+  def update(row: Int, value: Array[N]): Unit = {
+    data(row) = value
+  }
+
   @targetName("timesSymbol")
   def *(that: Matrix[N]): Matrix[N] = times(that)
 
@@ -144,6 +148,52 @@ final class Matrix[N: ClassTag](val rows: Int, val cols: Int)(using num: Numeric
       result(j, i) = this(i, j)
     }
     result
+  }
+
+  /**
+   * 行列のランク
+   */
+  def rank: Int = {
+    val m    = this.toDouble // 元の行列を変更しないためにコピーを作成
+    val eps  = 1e-10
+    var rank = 0
+    for (col <- 0 until m.cols) {
+      var pivotRow: Int = -1
+      boundary {
+        for (row <- rank until m.rows) {
+          if (math.abs(m(row, col)) > eps) {
+            pivotRow = row
+            break()
+          }
+        }
+      }
+
+      if (pivotRow != -1) {
+        // ピボット行を交換
+        val tmp = m(pivotRow)
+        m(pivotRow) = m(rank)
+        m(rank) = tmp
+
+        val pivot = m(rank, col)
+        // ピボット行をピボットで割る
+        for (j <- 0 until m.cols) {
+          m(rank, j) /= pivot
+        }
+
+        // ピボット列の他のすべての要素を0にする
+        for (i <- 0 until m.rows) {
+          if (i != rank) {
+            val factor = m(i, col)
+            for (j <- 0 until m.cols) {
+              m(i, j) -= factor * m(rank, j)
+            }
+          }
+        }
+
+        rank += 1
+      }
+    }
+    rank
   }
 
   /**

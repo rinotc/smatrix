@@ -64,6 +64,28 @@ class MatrixTest extends BaseTest {
     }
   }
 
+  describe("rank") {
+    it("正方行列でフルランクの場合は次元と等しい") {
+      val matrix = Matrix(Array(Array(1.0, 2.0), Array(3.0, 4.0)))
+      matrix.rank should be(2)
+    }
+
+    it("正方行列でランクが行列の次元よりも小さい場合") {
+      val matrix = Matrix(Array(Array(1.0, 2.0), Array(2.0, 4.0)))
+      matrix.rank should be(1)
+    }
+
+    it("非正方行列でランクが行数と等しい場合") {
+      val matrix = Matrix(Array(Array(1.0, 2.0, 3.0), Array(4.0, 5.0, 6.0)))
+      matrix.rank should be(2)
+    }
+
+    it("非正方行列でランクが行数よりも小さい場合") {
+      val matrix = Matrix(Array(Array(1.0, 2.0, 3.0), Array(2.0, 4.0, 6.0)))
+      matrix.rank should be(1)
+    }
+  }
+
   describe("transpose") {
     it("2x3の行列を転置したら3x2の行列になる") {
       val matrix   = Matrix(Array(Array(1.0, 2.0, 3.0), Array(4.0, 5.0, 6.0)))
