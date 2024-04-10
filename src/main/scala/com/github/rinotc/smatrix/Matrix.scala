@@ -297,4 +297,6 @@ object Matrix {
     }
     matrix
   }
+
+  def I[N: Numeric: ClassTag](size: Int): Matrix[N] = identity(size)
 }
