@@ -18,7 +18,6 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   require(cols > 0, "The number of columns must be greater than 0")
 
   private val data: Array[Array[N]] = Array.ofDim[N](rows, cols)
-  private val num                   = summon[Numeric[N]]
 
   def apply(row: Int): Array[N] = data(row)
 
@@ -49,7 +48,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @param that
    *   乗法する行列 (this.cols == that.rows である必要がある)
    */
-  def times(that: Matrix[N]): Matrix[N] = {
+  def times(that: Matrix[N])(using num: Numeric[N]): Matrix[N] = {
     require(
       this.cols == that.rows, // 2 x 3 * 3 x 5 => 2 x 5
       "The number of columns of the first matrix must be equal to the number of rows of the second matrix"
@@ -76,7 +75,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @param that
    *   スカラー値
    */
-  def times(that: N): Matrix[N] = {
+  def times(that: N)(using num: Numeric[N]): Matrix[N] = {
     val result = new Matrix(this.rows, this.cols)
     for {
       i <- 0 until this.rows
@@ -120,7 +119,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @return
    *   トレース
    */
-  def trace: N = {
+  def trace(using num: Numeric[N]): N = {
     require(
       this.isSquare,
       "The matrix must be square"
@@ -221,7 +220,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @note
    *   ラプラス展開による
    */
-  def determinant: N = {
+  def determinant(using num: Numeric[N]): N = {
     require(isSquare, "The matrix must be square")
 
     val size = this.rows
@@ -245,6 +244,57 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   }
 
   /**
+   * @return
+   *   逆行列
+   */
+  def inverse(using frac: Fractional[N]): Matrix[N] = {
+    require(isSquare, "The matrix must be square")
+    require(isNonSingular, "The matrix must be non-singular")
+
+    val size      = this.rows
+    val augmented = new Matrix[N](size, size * 2)
+
+    // Augment the matrix with the identity matrix
+    for (i <- 0 until size) {
+      for (j <- 0 until size) {
+        augmented(i, j) = this(i, j)
+        augmented(i, j + size) = if (i == j) frac.one else frac.zero
+      }
+    }
+
+    // Apply Gauss-Jordan Elimination
+    for (i <- 0 until size) {
+      val pivot = augmented(i, i)
+      require(pivot != frac.zero, "The matrix is singular")
+
+      // Scale the pivot row
+      for (j <- 0 until size * 2) {
+        augmented(i, j) = frac.div(augmented(i, j), pivot)
+      }
+
+      // Eliminate other rows
+      for (k <- 0 until size) {
+        if (k != i) {
+          val factor = augmented(k, i)
+          for (j <- 0 until size * 2) {
+            augmented(k, j) = frac.minus(augmented(k, j), frac.times(factor, augmented(i, j)))
+          }
+        }
+      }
+    }
+
+    // Extract the inverse matrix
+    val inverse = new Matrix[N](size, size)
+    for (i <- 0 until size) {
+      for (j <- 0 until size) {
+        inverse(i, j) = augmented(i, j + size)
+      }
+    }
+
+    inverse
+  }
+
+  /**
    * 対称行列かどうか
    */
   def isSymmetric: Boolean = {
@@ -259,7 +309,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   /**
    * 対角行列かどうか
    */
-  def isDiagonal: Boolean = boundary {
+  def isDiagonal(using num: Numeric[N]): Boolean = boundary {
     if !isSquare then break(false)
     for {
       i <- 0 until rows
@@ -273,7 +323,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   /**
    * 恒等行列（=単位行列）かどうか
    */
-  def isIdentity: Boolean = boundary {
+  def isIdentity(using num: Numeric[N]): Boolean = boundary {
     if !isDiagonal then break(false)
     for {
       i <- 0 until rows
@@ -290,7 +340,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    */
   def shape: (Int, Int) = (rows, cols)
 
-  def toDouble: Matrix[Double] = {
+  def toDouble(using num: Numeric[N]): Matrix[Double] = {
     val result = Matrix[Double](rows, cols)
     for {
       i <- 0 until rows
@@ -301,7 +351,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
     result
   }
 
-  def toInt: Matrix[Int] = {
+  def toInt(using num: Numeric[N]): Matrix[Int] = {
     val result = Matrix[Int](rows, cols)
     for {
       i <- 0 until rows

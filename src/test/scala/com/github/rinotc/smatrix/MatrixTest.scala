@@ -121,6 +121,45 @@ class MatrixTest extends BaseTest {
     }
   }
 
+  describe("inverse") {
+
+    it("2x2の行列の逆行列の計算が正しい") {
+      val matrix   = Matrix(Array(Array(1.0, 2.0), Array(3.0, 4.0)))
+      val expected = Matrix(Array(Array(-2.0, 1.0), Array(1.5, -0.5)))
+      matrix.inverse should be(expected)
+    }
+
+    it("3x3の行列の逆行列の計算が正しい") {
+      val matrix = Matrix(Array(Array(1.0, 2.0, 3.0), Array(0.0, 1.0, 4.0), Array(5.0, 6.0, 0.0)))
+      val expected = Matrix(
+        Array(
+          Array(-24.0, 18.0, 5.0),
+          Array(20.0, -15.0, -4.0),
+          Array(-5.0, 4.0, 1.0)
+        )
+      )
+      matrix.inverse should be(expected)
+    }
+
+    it("正方行列でないとき、例外を投げる") {
+      val matrix = Matrix(Array(Array(1.0, 2.0), Array(3.0, 4.0), Array(5.0, 6.0)))
+      a[IllegalArgumentException] should be thrownBy matrix.inverse
+    }
+
+    it("特異行列（非正則行列）のとき、例外を投げる") {
+      val matrix = Matrix(Array(Array(1.0, 2.0), Array(2.0, 4.0)))
+      matrix.determinant should be(0.0)
+      a[IllegalArgumentException] should be thrownBy matrix.inverse
+    }
+
+    it("自身とその逆行列の積は、単位行列である") {
+      val matrix = Matrix(Array(Array(1.0, 2.0), Array(3.0, 4.0)))
+      val inv    = matrix.inverse
+      (matrix * inv) shouldBe Matrix.identity[Double](2)
+      (inv * matrix) shouldBe Matrix.identity[Double](2)
+    }
+  }
+
   describe("transpose") {
     it("2x3の行列を転置したら3x2の行列になる") {
       val matrix   = Matrix(Array(Array(1.0, 2.0, 3.0), Array(4.0, 5.0, 6.0)))
