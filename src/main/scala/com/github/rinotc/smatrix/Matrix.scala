@@ -13,11 +13,12 @@ import scala.util.boundary.break
  * @param cols
  *   列数 (列数は0より大きい)
  */
-final class Matrix[N: ClassTag](val rows: Int, val cols: Int)(using num: Numeric[N]) {
+final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   require(rows > 0, "The number of rows must be greater than 0")
   require(cols > 0, "The number of columns must be greater than 0")
 
   private val data: Array[Array[N]] = Array.ofDim[N](rows, cols)
+  private val num                   = summon[Numeric[N]]
 
   def apply(row: Int): Array[N] = data(row)
 
@@ -194,6 +195,53 @@ final class Matrix[N: ClassTag](val rows: Int, val cols: Int)(using num: Numeric
       }
     }
     rank
+  }
+
+  /** フルランクかどうか？ */
+  def isFullRank: Boolean = rank == math.min(rows, cols)
+
+  /** 行フルランクであるか？ */
+  def isRowFullRank: Boolean = rank == rows
+
+  /** 列フルランクであるか？ */
+  def isColFullRank: Boolean = rank == cols
+
+  /** 特異行列かどうか？ */
+  def isSingular: Boolean = isSquare && !isFullRank
+
+  /** 非特異行列かどうか？ */
+  def isNonSingular: Boolean = isRowFullRank && isColFullRank
+
+  /** 正則行列かどうか？ */
+  def isRegular: Boolean = isNonSingular
+
+  /**
+   * 行列式
+   *
+   * @note
+   *   ラプラス展開による
+   */
+  def determinant: N = {
+    require(isSquare, "The matrix must be square")
+
+    val size = this.rows
+    if size == 1 then this(0, 0)
+    else {
+      var det: N = num.zero
+      for (col <- 0 until size) {
+        val subMatrix = new Matrix[N](size - 1, size - 1)
+        for {
+          i <- 1 until size
+          j <- 0 until size
+        } {
+          if j < col then subMatrix(i - 1, j) = this(i, j)
+          else if j > col then subMatrix(i - 1, j - 1) = this(i, j)
+        }
+        val term = num.times(this(0, col), subMatrix.determinant)
+        det = if col % 2 == 0 then num.plus(det, term) else num.minus(det, term)
+      }
+      det
+    }
   }
 
   /**
