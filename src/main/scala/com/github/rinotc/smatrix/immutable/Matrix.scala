@@ -350,7 +350,7 @@ final class Matrix[N: Numeric] private (val data: Vector[Vector[N]]) {
 
 object Matrix {
 
-  def apply[N: Numeric](data: Seq[Seq[N]]): Matrix[N] = new Matrix(data.toVector.map(_.toVector))
+  def apply[N: Numeric](data: Iterable[Iterable[N]]) = new Matrix(data.map(_.toVector).toVector)
 
   def apply[N: Numeric](rows: Int, cols: Int): Matrix[N] = {
     val data = Vector.fill(rows)(Vector.fill(cols)(summon[Numeric[N]].zero))
