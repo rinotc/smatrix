@@ -350,6 +350,8 @@ final class Matrix[N: Numeric] private (val data: Vector[Vector[N]]) {
 
 object Matrix {
 
+  def apply[N: Numeric](data: Array[Array[N]]) = new Matrix(data.map(_.toVector).toVector)
+
   def apply[N: Numeric](data: Iterable[Iterable[N]]) = new Matrix(data.map(_.toVector).toVector)
 
   def apply[N: Numeric](rows: Int, cols: Int): Matrix[N] = {
@@ -357,7 +359,9 @@ object Matrix {
     new Matrix(data)
   }
 
-  def vec[N: Numeric](data: Seq[N]): Matrix[N] = new Matrix(Vector(data.toVector))
+  def vec[N: Numeric](data: Iterable[N]): Matrix[N] = new Matrix(Vector(data.toVector))
+
+  def vec[N: Numeric](data: Array[N]): Matrix[N] = new Matrix(Vector(data.toVector))
 
   private def requirements[N: Numeric](data: Seq[Seq[N]]): Either[String, Unit] = {
     for {
