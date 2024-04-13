@@ -1,4 +1,6 @@
-package com.github.rinotc.smatrix
+package com.github.rinotc.smatrix.mutable
+
+import com.github.rinotc.smatrix.immutable.Matrix
 
 import scala.annotation.targetName
 import scala.reflect.ClassTag
@@ -13,7 +15,7 @@ import scala.util.boundary.break
  * @param cols
  *   列数 (列数は0より大きい)
  */
-final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
+final class MutableMatrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   require(rows > 0, "The number of rows must be greater than 0")
   require(cols > 0, "The number of columns must be greater than 0")
 
@@ -32,13 +34,13 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   }
 
   @targetName("timesSymbol")
-  def *(that: Matrix[N]): Matrix[N] = times(that)
+  def *(that: MutableMatrix[N]): MutableMatrix[N] = times(that)
 
   @targetName("timesSymbol")
-  def *(that: N): Matrix[N] = times(that)
+  def *(that: N): MutableMatrix[N] = times(that)
 
   @targetName("plusSymbol")
-  def +(that: Matrix[N]): Matrix[N] = plus(that)
+  def +(that: MutableMatrix[N]): MutableMatrix[N] = plus(that)
 
   /**
    * 行列の乗法
@@ -48,12 +50,12 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @param that
    *   乗法する行列 (this.cols == that.rows である必要がある)
    */
-  def times(that: Matrix[N])(using num: Numeric[N]): Matrix[N] = {
+  def times(that: MutableMatrix[N])(using num: Numeric[N]): MutableMatrix[N] = {
     require(
       this.cols == that.rows, // 2 x 3 * 3 x 5 => 2 x 5
       "The number of columns of the first matrix must be equal to the number of rows of the second matrix"
     )
-    val result = new Matrix(this.rows, that.cols)
+    val result = new MutableMatrix(this.rows, that.cols)
     for {
       i <- 0 until this.rows
       j <- 0 until that.cols
@@ -75,8 +77,8 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @param that
    *   スカラー値
    */
-  def times(that: N)(using num: Numeric[N]): Matrix[N] = {
-    val result = new Matrix(this.rows, this.cols)
+  def times(that: N)(using num: Numeric[N]): MutableMatrix[N] = {
+    val result = new MutableMatrix(this.rows, this.cols)
     for {
       i <- 0 until this.rows
       j <- 0 until this.cols
@@ -94,12 +96,12 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @param that
    *   加算する行列
    */
-  def plus(that: Matrix[N])(using num: Numeric[N]): Matrix[N] = {
+  def plus(that: MutableMatrix[N])(using num: Numeric[N]): MutableMatrix[N] = {
     require(
       this.shape == that.shape,
       "The shape of the two matrices must be the same"
     )
-    val result = new Matrix(this.rows, this.cols)
+    val result = new MutableMatrix(this.rows, this.cols)
     for {
       i <- 0 until this.rows
       j <- 0 until this.cols
@@ -139,8 +141,8 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @return
    *   転置行列
    */
-  def transpose: Matrix[N] = {
-    val result = new Matrix(this.cols, this.rows)
+  def transpose: MutableMatrix[N] = {
+    val result = new MutableMatrix(this.cols, this.rows)
     for {
       i <- 0 until this.rows
       j <- 0 until this.cols
@@ -228,7 +230,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
     else {
       var det: N = num.zero
       for (col <- 0 until size) {
-        val subMatrix = new Matrix[N](size - 1, size - 1)
+        val subMatrix = new MutableMatrix[N](size - 1, size - 1)
         for {
           i <- 1 until size
           j <- 0 until size
@@ -247,12 +249,12 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    * @return
    *   逆行列
    */
-  def inverse(using frac: Fractional[N]): Matrix[N] = {
+  def inverse(using frac: Fractional[N]): MutableMatrix[N] = {
     require(isSquare, "The matrix must be square")
     require(isNonSingular, "The matrix must be non-singular")
 
     val size      = this.rows
-    val augmented = new Matrix[N](size, size * 2)
+    val augmented = new MutableMatrix[N](size, size * 2)
 
     // Augment the matrix with the identity matrix
     for (i <- 0 until size) {
@@ -284,7 +286,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
     }
 
     // Extract the inverse matrix
-    val inverse = new Matrix[N](size, size)
+    val inverse = new MutableMatrix[N](size, size)
     for (i <- 0 until size) {
       for (j <- 0 until size) {
         inverse(i, j) = augmented(i, j + size)
@@ -340,8 +342,8 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
    */
   def shape: (Int, Int) = (rows, cols)
 
-  def toDouble(using num: Numeric[N]): Matrix[Double] = {
-    val result = Matrix[Double](rows, cols)
+  def toDouble(using num: Numeric[N]): MutableMatrix[Double] = {
+    val result = MutableMatrix[Double](rows, cols)
     for {
       i <- 0 until rows
       j <- 0 until cols
@@ -351,8 +353,8 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
     result
   }
 
-  def toInt(using num: Numeric[N]): Matrix[Int] = {
-    val result = Matrix[Int](rows, cols)
+  def toInt(using num: Numeric[N]): MutableMatrix[Int] = {
+    val result = MutableMatrix[Int](rows, cols)
     for {
       i <- 0 until rows
       j <- 0 until cols
@@ -361,6 +363,8 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
     }
     result
   }
+
+  def toImmutable: Matrix[N] = Matrix(data.map(_.toVector).toVector)
 
   def prettyString: String = {
     val rowsStrings = for (row <- data) yield row.mkString(" ")
@@ -372,7 +376,7 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   }
 
   override def equals(other: Any): Boolean = other match
-    case that: Matrix[_] =>
+    case that: MutableMatrix[_] =>
       this.rows == that.rows &&
       this.cols == that.cols &&
       this.data.corresponds(that.data)(_ sameElements _)
@@ -388,13 +392,13 @@ final class Matrix[N: Numeric: ClassTag](val rows: Int, val cols: Int) {
   }
 }
 
-object Matrix {
-  def apply[N: Numeric: ClassTag](rows: Int, cols: Int): Matrix[N] = new Matrix(rows, cols)
+object MutableMatrix {
+  def apply[N: Numeric: ClassTag](rows: Int, cols: Int): MutableMatrix[N] = new MutableMatrix(rows, cols)
 
-  def apply[N: Numeric: ClassTag](data: Array[Array[N]]): Matrix[N] = {
+  def apply[N: Numeric: ClassTag](data: Array[Array[N]]): MutableMatrix[N] = {
     val rows   = data.length
     val cols   = data(0).length
-    val matrix = new Matrix(rows, cols)
+    val matrix = new MutableMatrix(rows, cols)
     for {
       i <- 0 until rows
       j <- 0 until cols
@@ -409,10 +413,10 @@ object Matrix {
    * @param data
    *   1次元配列
    */
-  def apply[N: Numeric: ClassTag](data: Array[N]): Matrix[N] = {
+  def apply[N: Numeric: ClassTag](data: Array[N]): MutableMatrix[N] = {
     val rows   = 1
     val cols   = data.length
-    val matrix = new Matrix(rows, cols)
+    val matrix = new MutableMatrix(rows, cols)
     for {
       j <- 0 until cols
     } {
@@ -435,8 +439,8 @@ object Matrix {
    * @param size
    *   行列のサイズ
    */
-  def identity[N: Numeric: ClassTag](size: Int): Matrix[N] = {
-    val matrix = new Matrix[N](size, size)
+  def identity[N: Numeric: ClassTag](size: Int): MutableMatrix[N] = {
+    val matrix = new MutableMatrix[N](size, size)
     for {
       i <- 0 until size
       j <- 0 until size
@@ -446,7 +450,7 @@ object Matrix {
     matrix
   }
 
-  def I[N: Numeric: ClassTag](size: Int): Matrix[N] = identity(size)
+  def I[N: Numeric: ClassTag](size: Int): MutableMatrix[N] = identity(size)
 
   /**
    * ゼロ行列を作成する
@@ -456,8 +460,8 @@ object Matrix {
    * @param cols
    *   列数
    */
-  def zero[N: Numeric: ClassTag](rows: Int, cols: Int): Matrix[N] = {
-    val matrix = new Matrix[N](rows, cols)
+  def zero[N: Numeric: ClassTag](rows: Int, cols: Int): MutableMatrix[N] = {
+    val matrix = new MutableMatrix[N](rows, cols)
     for {
       i <- 0 until rows
       j <- 0 until cols
@@ -467,5 +471,5 @@ object Matrix {
     matrix
   }
 
-  def zero[N: Numeric: ClassTag](size: Int): Matrix[N] = zero(size, size)
+  def zero[N: Numeric: ClassTag](size: Int): MutableMatrix[N] = zero(size, size)
 }

@@ -1,10 +1,12 @@
 package com.github.rinotc.smatrix.immutable
 
+import com.github.rinotc.smatrix.mutable.MutableMatrix
+
 import scala.annotation.targetName
 import scala.util.boundary
 import scala.util.boundary.break
 
-final class Matrix[N: Numeric] private (private val data: Vector[Vector[N]]) {
+final class Matrix[N: Numeric] private (val data: Vector[Vector[N]]) {
 
   import Matrix.*
 
@@ -300,6 +302,33 @@ final class Matrix[N: Numeric] private (private val data: Vector[Vector[N]]) {
   override def toString: String = {
     val dataStr = data.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]")
     s"Matrix(shape=($rows, $cols), data=$dataStr)"
+  }
+
+  def toMutableDouble(using N =:= Double): MutableMatrix[Double] = {
+    val arr = Array.ofDim[Double](rows, cols)
+    for {
+      i <- 0 until rows
+      j <- 0 until cols
+    } { arr(i)(j) = data(i)(j) }
+    MutableMatrix(arr)
+  }
+
+  def toMutableInt(using N =:= Int): MutableMatrix[Int] = {
+    val arr = Array.ofDim[Int](rows, cols)
+    for {
+      i <- 0 until rows
+      j <- 0 until cols
+    } { arr(i)(j) = data(i)(j) }
+    MutableMatrix(arr)
+  }
+
+  def toMutableBigDecimal(using N =:= BigDecimal): MutableMatrix[BigDecimal] = {
+    val arr = Array.ofDim[BigDecimal](rows, cols)
+    for {
+      i <- 0 until rows
+      j <- 0 until cols
+    } { arr(i)(j) = data(i)(j) }
+    MutableMatrix(arr)
   }
 
   override def equals(other: Any): Boolean = other match
