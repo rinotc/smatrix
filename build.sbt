@@ -1,4 +1,4 @@
-ThisBuild / version := "0.0.2"
+ThisBuild / version := "0.0.3"
 
 ThisBuild / scalaVersion := "3.3.3"
 
@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "smatrix",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.2.17" % Test
+      "org.scalatest" %% "scalatest" % "3.2.18" % Test
     ),
     publishMavenStyle    := true,
     pomIncludeRepository := { _ => false },
