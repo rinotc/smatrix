@@ -447,4 +447,25 @@ object Matrix {
   }
 
   def I[N: Numeric: ClassTag](size: Int): Matrix[N] = identity(size)
+
+  /**
+   * ゼロ行列を作成する
+   *
+   * @param rows
+   *   行数
+   * @param cols
+   *   列数
+   */
+  def zero[N: Numeric: ClassTag](rows: Int, cols: Int): Matrix[N] = {
+    val matrix = new Matrix[N](rows, cols)
+    for {
+      i <- 0 until rows
+      j <- 0 until cols
+    } {
+      matrix(i, j) = summon[Numeric[N]].zero
+    }
+    matrix
+  }
+
+  def zero[N: Numeric: ClassTag](size: Int): Matrix[N] = zero(size, size)
 }
